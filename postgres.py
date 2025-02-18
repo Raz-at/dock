@@ -8,15 +8,6 @@ app = Flask(__name__)
 def get_db_connection():
     return create_engine('postgresql://user:password@postgres:5432/postgresDB')
 
-# while True:
-#     try:
-#         db_engine = get_db_connection().connect()
-#         print("Database connection successful!")
-#         break
-#     except Exception as e:
-#         print("Error..", e)
-#         continue
-
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -27,9 +18,10 @@ def submit():
     db_engine = get_db_connection()
     try:
         with db_engine.connect() as connection:
+            tranasction = connection.begin()
             insert_query = text("INSERT INTO dock.user_detail (name) VALUES (:name)")
             connection.execute(insert_query, {"name": name})
-            connection.commit()  # Commit the transaction
+            tranasction.commit()  
         return "Data is inserted"
     except SQLAlchemyError as e:
         print("Error while inserting:", e)
@@ -37,4 +29,5 @@ def submit():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True)
+
